@@ -1,0 +1,93 @@
+<template>
+  <div>
+    <component :is="componentIs" ref="copyFormRef"></component>
+    <div>
+      <el-button
+        v-if="stepHandler.next"
+        :loading="loading"
+        type="primary"
+        @click="next"
+      >
+        下一步
+      </el-button>
+      <el-button
+        v-if="stepHandler.finish"
+        :loading="loading"
+        type="primary"
+        @click="finish"
+      >
+        完成
+      </el-button>
+      <el-button
+        v-if="stepHandler.previous"
+        :loading="loading"
+        @click="previous"
+      >
+        上一步
+      </el-button>
+      <el-button :loading="loading" @click="cancel"> 取消 </el-button>
+    </div>
+  </div>
+</template>
+<script setup lang="ts">
+import { ref, defineAsyncComponent, markRaw } from "vue";
+import { ElMessage } from "element-plus";
+const loading = ref<boolean>(false);
+// 下一步
+async function next() {
+  loading.value = true;
+  try {
+    const refulst = await stepHandler.value.saveDate();
+    if (!refulst) {
+      return;
+    }
+    if (stepHandler.value.next) {
+      stepHandler.value = stepHandler.value.next();
+      componentIs.value = stepHandler.value.component;
+    }
+    loading.value = false;
+  } catch (e) {
+    console.log(e);
+    loading.value = false;
+  }
+}
+function previous() {
+  if (stepHandler.value.previous) {
+    stepHandler.value = stepHandler.value.previous();
+    componentIs.value = stepHandler.value.component;
+  }
+}
+function cancel() {
+  ElMessage.success("取消...");
+}
+function finish() {
+  /**
+   * 这里可以写完成逻辑：如关闭页面、跳转页面、重置数据等
+   * 比如重置到第一页：
+   * componentIs.value = firststepHandler.value.component;
+   */
+  ElMessage.success("完成...");
+}
+const test: StepHandler = {
+  id: "test",
+  saveDate: async () => {
+    console.log("test");
+    return true;
+  },
+  component: markRaw(
+    defineAsyncComponent(() => import("@/components/TestComponent.vue"))
+  ),
+};
+const stepHandler = ref<StepHandler>(test);
+const componentIs = ref<unknown>(stepHandler.value.component);
+interface StepHandler {
+  id: string;
+  component: unknown;
+  title?: string;
+  saveDate: () => Promise<boolean>;
+  next?: () => StepHandler;
+  previous?: () => StepHandler;
+  finish?: () => void;
+}
+</script>
+<style></style>
