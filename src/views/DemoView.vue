@@ -45,9 +45,9 @@ async function next() {
       stepHandler.value = stepHandler.value.next();
       componentIs.value = stepHandler.value.component;
     }
-    loading.value = false;
   } catch (e) {
     console.log(e);
+  } finally {
     loading.value = false;
   }
 }
@@ -74,6 +74,7 @@ const test: StepHandler = {
     console.log("test");
     return true;
   },
+  // 请使用 markRaw 函数返回，可以防止不必要的性能开销
   component: markRaw(
     defineAsyncComponent(() => import("@/components/TestComponent.vue"))
   ),
