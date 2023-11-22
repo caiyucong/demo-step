@@ -25,12 +25,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, toRefs } from "vue";
+import { ref, reactive, toRefs, Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { useStore } from "vuex";
 import type { UserData } from "@/store/index";
 const store = useStore();
-const { userData: data } = toRefs(store.state);
+const { userData: data } = toRefs(store.state) as { userData: Ref<UserData> };
 const validatePass = (rule: any, value: any, callback: any) => {
   if (value === "") {
     callback(new Error("请输入密码"));

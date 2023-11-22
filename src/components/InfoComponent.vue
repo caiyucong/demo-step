@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <el-form :model="data">
+    <el-form :model="data" label-width="120px">
       <el-form-item label="姓名">
         <el-input v-model="data.name" placeholder="请输入姓名" />
       </el-form-item>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <component :is="componentIs" ref="copyFormRef"></component>
+    <component :is="stepHandler.component" ref="copyFormRef"></component>
     <div>
       <el-button
         v-if="stepHandler.next"
@@ -18,6 +18,9 @@
       >
         完成
       </el-button>
+      <el-button v-if="stepHandler.id === 'tow'" @click="stepHandler = newData">
+        新页面
+      </el-button>
       <el-button
         v-if="stepHandler.previous"
         :loading="loading"
@@ -32,6 +35,10 @@
 <script setup lang="ts">
 import { ref, defineAsyncComponent, markRaw } from "vue";
 import { ElMessage } from "element-plus";
+import type { StepHandler } from "@/store/index";
+import { useStore } from "vuex";
+const store = useStore();
+const { newData } = store.state;
 const loading = ref<boolean>(false);
 const copyFormRef = ref<any>();
 // 下一步
@@ -44,7 +51,6 @@ async function next() {
     }
     if (stepHandler.value.next) {
       stepHandler.value = stepHandler.value.next();
-      componentIs.value = stepHandler.value.component;
     }
   } catch (e) {
     console.log(e);
@@ -55,19 +61,24 @@ async function next() {
 function previous() {
   if (stepHandler.value.previous) {
     stepHandler.value = stepHandler.value.previous();
-    componentIs.value = stepHandler.value.component;
   }
 }
 function cancel() {
+  stepHandler.value = first;
   ElMessage.success("取消...");
 }
-function finish() {
+async function finish() {
+  if (!stepHandler.value.finish) return;
+  const refulst = await stepHandler.value.finish();
+  if (!refulst) {
+    return;
+  }
   /**
    * 这里可以写完成逻辑：如关闭页面、跳转页面、重置数据等
    * 比如重置到第一页：
    * componentIs.value = firststepHandler.value.component;
    */
-  ElMessage.success("完成...");
+  stepHandler.value = first;
 }
 const first: StepHandler = {
   id: "first",
@@ -92,17 +103,11 @@ const info: StepHandler = {
   component: markRaw(
     defineAsyncComponent(() => import("@/components/InfoComponent.vue"))
   ),
+  finish: async () => {
+    ElMessage.success("完成！");
+    return true;
+  },
 };
 const stepHandler = ref<StepHandler>(first);
-const componentIs = ref<unknown>(stepHandler.value.component);
-interface StepHandler {
-  id: string;
-  component: unknown;
-  title?: string;
-  saveDate: () => Promise<boolean>;
-  next?: () => StepHandler;
-  previous?: () => StepHandler;
-  finish?: () => Promise<boolean>;
-}
 </script>
 <style></style>
