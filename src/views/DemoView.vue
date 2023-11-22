@@ -102,7 +102,7 @@ interface StepHandler {
   saveDate: () => Promise<boolean>;
   next?: () => StepHandler;
   previous?: () => StepHandler;
-  finish?: () => void;
+  finish?: () => Promise<boolean>;
 }
 </script>
 <style></style>
