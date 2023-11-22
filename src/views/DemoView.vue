@@ -33,6 +33,7 @@
 import { ref, defineAsyncComponent, markRaw } from "vue";
 import { ElMessage } from "element-plus";
 const loading = ref<boolean>(false);
+const copyFormRef = ref<any>();
 // 下一步
 async function next() {
   loading.value = true;
@@ -68,18 +69,31 @@ function finish() {
    */
   ElMessage.success("完成...");
 }
-const test: StepHandler = {
-  id: "test",
+const first: StepHandler = {
+  id: "first",
   saveDate: async () => {
-    console.log("test");
+    await copyFormRef.value.$refs.formRef.validate();
+    ElMessage.success("保存数据");
     return true;
   },
+  next: () => info,
   // 请使用 markRaw 函数返回，可以防止不必要的性能开销
   component: markRaw(
-    defineAsyncComponent(() => import("@/components/TestComponent.vue"))
+    defineAsyncComponent(() => import("@/components/RegComponent.vue"))
   ),
 };
-const stepHandler = ref<StepHandler>(test);
+const info: StepHandler = {
+  id: "tow",
+  saveDate: async () => {
+    console.log("saveInfo");
+    return true;
+  },
+  previous: () => first,
+  component: markRaw(
+    defineAsyncComponent(() => import("@/components/InfoComponent.vue"))
+  ),
+};
+const stepHandler = ref<StepHandler>(first);
 const componentIs = ref<unknown>(stepHandler.value.component);
 interface StepHandler {
   id: string;
